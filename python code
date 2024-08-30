@@ -1,0 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+# Simulate data acquisition
+def simulate_data(freq=50, sampling_rate=1000, fault_threshold=1.0):
+    t = np.linspace(0, 1, sampling_rate, endpoint=False)
+    signal_data = np.sin(2 * np.pi * freq * t) + 0.5 * np.random.randn(len(t))
+    fault_indices = np.where(signal_data > fault_threshold)[0]
+    return t, signal_data, fault_indices
+
+# Real-time plot update function
+def update_plot(frame):
+    t, data, faults = simulate_data()
+    line.set_ydata(data)
+    line.set_xdata(t)
+    
+    # Update fault markers
+    fault_markers.set_data(t[faults], data[faults])
+    if len(faults) > 0:
+        print(f"Fault detected at indices: {faults}")
+    
+    return line, fault_markers
+
+# Initialize the plot
+fig, ax = plt.subplots()
+sampling_rate = 1000
+t, initial_data, _ = simulate_data()
+line, = ax.plot(t, initial_data, label='Signal')
+fault_markers, = ax.plot([], [], 'ro', label='Faults')
+
+ax.set_ylim(-2, 2)
+ax.set_xlim(0, 1)
+ax.set_xlabel('Time [s]')
+ax.set_ylabel('Amplitude')
+ax.set_title('Real-Time Electrical Fault Detection')
+ax.legend()
+
+# Set up the animation
+ani = animation.FuncAnimation(fig, update_plot, blit=True, interval=1000 / sampling_rate)
+
+plt.show()
